@@ -16,10 +16,20 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
           
-      # هنا تم استبدال الأمر ليبرمج اللعبة باستخدام أداة السيرفر العامة
-      - name: Build with Gradle
-        run: gradle assembleDebug
-        
+      - name: Find Gradle Project and Build
+        run: |
+          # البحث التلقائي عن المجلد الذي يحتوي على ملفات النظام
+          GRADLE_DIR=$(find . -name "settings.gradle" -o -name "settings.gradle.kts" | head -n 1 | xargs dirname)
+          
+          if [ -z "$GRADLE_DIR" ]; then
+            echo "خطأ: لم يتم العثور على ملفات نظام أندرويد في المستودع. تأكد من رفع الملفات بشكل صحيح."
+            exit 1
+          else
+            echo "تم العثور على مشروع أندرويد في المجلد: $GRADLE_DIR"
+            cd "$GRADLE_DIR"
+            gradle assembleDebug
+          fi
+          
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
